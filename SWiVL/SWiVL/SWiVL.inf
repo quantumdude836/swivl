@@ -1,0 +1,91 @@
+;
+; Swivl.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Hypervisor
+ClassGuid={55a8a25f-4a0d-4751-ba07-78607f29ca95}
+Provider=%ManufacturerName%
+CatalogFile=Swivl.cat
+DriverVer=
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+Swivl.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%Swivl.DeviceDesc%=Swivl_Device, Root\Swivl
+
+[Swivl_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+Swivl.sys
+
+;-------------- Service installation
+[Swivl_Device.NT.Services]
+AddService = Swivl,%SPSVCINST_ASSOCSERVICE%, Swivl_Service_Inst
+
+; -------------- Swivl driver install sections
+[Swivl_Service_Inst]
+DisplayName    = %Swivl.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\Swivl.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- Swivl_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+Swivl_Device_CoInstaller_CopyFiles = 11
+
+[Swivl_Device.NT.CoInstallers]
+AddReg=Swivl_Device_CoInstaller_AddReg
+CopyFiles=Swivl_Device_CoInstaller_CopyFiles
+
+[Swivl_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[Swivl_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[Swivl_Device.NT.Wdf]
+KmdfService =  Swivl, Swivl_wdfsect
+[Swivl_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="AKMSoft"
+ClassName="Hypervisors"
+DiskName = "Swivl Installation Disk"
+Swivl.DeviceDesc = "Swivl Hypervisor"
+Swivl.SVCDESC = "Swivl Hypervisor Service"
